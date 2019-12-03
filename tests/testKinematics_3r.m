@@ -1,5 +1,6 @@
 function testKinematics_3r
 
+addpath("../")
 T_init = eye(4,4);
 n_joints = 3;
 types = 'rrr';

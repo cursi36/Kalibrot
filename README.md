@@ -1,7 +1,7 @@
-# Calibrot
+# Kalibrot
 Algorithm for Robot Kinematic Calibration
 
-- Calibrot is an optimization algorithm for solving the problem of finding the optimal DH parametres for correct robot kinematc calibration.
+- Kalibrot is an optimization algorithm for solving the problem of finding the optimal DH parametres for correct robot kinematc calibration.
 - The algorithm uses derivatives of the Cartesian position and orientation (computed through quaternions) which are retrieved analytically, thus sppeding up the computations.
 - Two different methods can be used: 
     1) traditional **pseudoinverse**

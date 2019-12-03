@@ -1,6 +1,6 @@
 function Calibration_3r
 
-
+addpath("../")
 %% Initiaizations
 T_init = eye(4,4);
 n_joints = 3;
