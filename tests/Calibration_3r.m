@@ -1,12 +1,12 @@
 function Calibration_3r
 
-
+addpath("../")
 %% Initiaizations
 T_init = eye(4,4);
 n_joints = 3;
 types = 'rrr';
 
-Robot = RobotKinematics(n_joints, types, T_init);
+Robot = RobotKinematics(n_joints, types, T_init,[]);
 
 % T = Robot.m_T_sym;
 % Dp = Robot.m_Dp_sym;
@@ -32,7 +32,7 @@ Limits(1:n_joints,1:4,2) = ...
     1 pi 2.1 pi];
 
 w_p = [0 0 1 0;
-    0 0 1 0;
+    0 0 1.5 0;
     0 0 1 0];
 
 % w_p = ones(n_joints,4);
@@ -43,9 +43,10 @@ DH_real = [0 0 1 0;
 
 % initial estimates
 %d,theta,a,alpha
-% DH = [0 0 0.5 0;
-%     0 0 0.3 0;
-%     0 0 1.9 0];
+
+DH = [0 0 0.5 0;
+    0 0 0.3 0;
+    0 0 1.9 0];
 
 DH = 1e-03*ones(3,4);
 

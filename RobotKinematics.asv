@@ -26,10 +26,10 @@ classdef RobotKinematics
         
         function obj = RobotKinematics(n_joints, types, T_init,T_tool)
             
-            if isempty(T_tool) == 0
-            obj.m_tool_added = 1;            
-            obj.m_T_tool = T_tool;
-            end
+            obj.m_tool_added = 1;
+            R_tool = [0 -1 0;1 0 0;0 0 1];
+            obj.m_T_tool(1:3,1:3) = R_tool;
+            obj.m_T_tool(1:3,4) = [1;1;0];
             
             obj.m_n_joints = n_joints;
             obj.m_joint_types = types;

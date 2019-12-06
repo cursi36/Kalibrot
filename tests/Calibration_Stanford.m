@@ -10,7 +10,7 @@ T_init = eye(4,4);
 n_joints = 6;
 types = 'rrprrr';
 
-Robot = RobotKinematics(n_joints, types, T_init);
+Robot = RobotKinematics(n_joints, types, T_init,[]);
 
 % P_m = P_m(:,1:3000);
 % Q = Q(:,1:3000);
