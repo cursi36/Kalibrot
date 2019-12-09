@@ -27,6 +27,7 @@ resid = zeros(n_dim,m);
 
 Err = 1e-08;
 dErr = 1e-10;
+Err_rel = 1e-03;
 Iter = 5000;
 
 Inliers_Idx = 1:m;
@@ -37,63 +38,78 @@ options = optimoptions('quadprog','display','off');
 
 
 
-for n_ref = 1:N_ref
+% for n_ref = 1:N_ref
+
+n_points = length(Inliers_Idx);
+
+dP = zeros(n_dim*n_points,1);
+D = zeros(n_dim*n_points,n_var);
+
+iter = 1;
+
+%Initial error
+for i = 1:m
+    q = Q(:,i);
+    [Robot,~,P_expect] = Robot.getPoseNum(q,DH_params);
+    P_expect = P_expect(dim,1);
     
-    n_points = length(Inliers_Idx);
+    resid(:,i) = P_m(:,i)-P_expect;
+    err_i = (norm(W(:,i).*resid(:,i)))^2;
+    err = err+err_i;
     
-    dP = zeros(n_dim*n_points,1);
-    D = zeros(n_dim*n_points,n_var);
+end
+err = err/m %mse on data with weights
+%     err = 1e10;
+err_opt = err;
+DH_params_opt = DH_params;
+
+t = 0;
+while(err > Err && iter < Iter)
+    tic
+    err_old = err;
     
-    iter = 1;
-    err = 1e10;
-    err_opt = err;
-    t = 0;
-    while(err > Err && iter < Iter)
-        tic
-        err_old = err;
+    lb = W_bound*(DH_param_lims(:,1)-DH_params)-1e-06;
+    ub = W_bound*(DH_param_lims(:,2)-DH_params)+1e-06;
+    
+    iter
+    "LOADING DATA"
+    for i = 1:n_points
         
-        lb = W_bound*(DH_param_lims(:,1)-x0)-1e-06;
-        ub = W_bound*(DH_param_lims(:,2)-x0)+1e-06;
+        j = Inliers_Idx(i);
         
-        iter
-        "LOADING DATA"
-        for i = 1:n_points
-            
-            j = Inliers_Idx(i);
-            
-            q = Q(:,j);
-            %             [Robot,~,P_expect] = Robot.getPose(q,DH_params);
-            
-            [Robot,~,P_expect,Dp,Dor] = Robot.getKineDeriv_Ana(q,DH_params);
-            P_expect = P_expect(dim,1);
-            
-            %             [Dp,Dor] = Robot.getDerivs(q,DH_params);
-            
-            v1 = n_dim*i-6;
-            v2 = v1+6;
-            
-            dP(v1:v2,1) = W(:,j).*(P_m(:,j)-P_expect);
-            Der = [Dp;Dor];
-            D(v1:v2,:) = W(:,j).*Der(dim,:)*W_p;
-        end
+        q = Q(:,j);
+        %             [Robot,~,P_expect] = Robot.getPose(q,DH_params);
         
-        lambda = 1e-03;
-        I = eye(n_var,n_var); %%needed to keep dx small
+        [Robot,~,P_expect,Dp,Dor] = Robot.getKineDeriv_Ana(q,DH_params);
+        P_expect = P_expect(dim,1);
         
-        H = D'*D+lambda*I;
-        f = -D'*dP;
+        %             [Dp,Dor] = Robot.getDerivs(q,DH_params);
         
-                "SOLVE QP"
-                
-        if method == 1
-                x = -pinv(H)*f;
+        v1 = n_dim*i-6;
+        v2 = v1+6;
         
-        elseif method == 2
-       
+        dP(v1:v2,1) = W(:,j).*(P_m(:,j)-P_expect);
+        Der = [Dp;Dor];
+        D(v1:v2,:) = W(:,j).*Der(dim,:)*W_p;
+    end
+    
+    lambda = 1e-03;
+    I = eye(n_var,n_var); %%needed to keep dx small
+    
+    H = D'*D+lambda*I;
+    f = -D'*dP;
+    
+    "SOLVE QP"
+    
+    if method == 1
+        x = -pinv(H)*f;
+        
+    elseif method == 2
+        
         %compute model
-                [x,fval,exitflag,~] = quadprog(H,f,[],[],[],[],lb,ub,[],options);
+        [x,fval,exitflag,~] = quadprog(H,f,[],[],[],[],lb,ub,[],options);
         
-%                  [x,fval,exitflag,] = lsqlin(D,dP,[],[],[],[],lb,ub,[],options_lsqlin);
+        %                  [x,fval,exitflag,] = lsqlin(D,dP,[],[],[],[],lb,ub,[],options_lsqlin);
         
         %         X = [x0,x,x_lsqlin]
         
@@ -102,89 +118,93 @@ for n_ref = 1:N_ref
             break;
         end
         
-        end
-        
-        DH_params = DH_params+x;
-        
-        err = 0;
-        
-        "MSE"
-        for i = 1:m
-            q = Q(:,i);
-            [Robot,~,P_expect] = Robot.getPoseNum(q,DH_params);
-            P_expect = P_expect(dim,1);
-            
-            resid(:,i) = P_m(:,i)-P_expect;
-            err_i = (norm(W(:,i).*resid(:,i)))^2;
-            err = err+err_i;
-            
-        end
-        err = err/m %mse on data with weights
-        
-        derr = abs(err-err_old)
-        err_old = err;
-        
-        iter = iter+1;
-        
-        %         t_err = toc;
-        
-        time_iter = toc;
-        
-        t = t+time_iter;
-        if err < err_opt
-            err_opt = err
-            DH_params_opt = DH_params;
-        end
-        
-        if (derr < dErr || err > 10*err_opt)
-            
-            break;
-            
-        end
-        
     end
     
-    DH_params = DH_params_opt;
+    DH_params = DH_params+x;
     
-    % refine model
-    [W,Inliers_Idx] = getWeights(resid);
+    err = 0;
     
-end
-
-end
-
-function [W,Inliers_Idx] = getWeights(R)
-[med,thresh] = getThreshold(R);
-
-[n_dim,m] = size(R);
-
-v = (R-med)./thresh;
-v = v.^2;
-
-[~,Outliers_Idx] = find(v > 1);
-Inliers_Idx = 1:m;
-Inliers_Idx(Outliers_Idx) = [];
-
-W = exp(-7*v); %%weights on all datapoints
-
-end
-
-function [m,thresh] = getThreshold(R)
-m = median(R,2);
-[n_dim,~] = size(R);
-
-abs_dev = abs(R-m);
-
-MAD = median(abs_dev,2);
-
-thresh = 2*ones(n_dim,1);
-thresh = thresh.*MAD;
-
-for i = 1:n_dim
-    if (thresh(i)) < 1e-10
-        thresh(i) = 1e10;
+    "MSE"
+    for i = 1:m
+        q = Q(:,i);
+        [Robot,~,P_expect] = Robot.getPoseNum(q,DH_params);
+        P_expect = P_expect(dim,1);
+        
+        resid(:,i) = P_m(:,i)-P_expect;
+        err_i = (norm(W(:,i).*resid(:,i)))^2;
+        err = err+err_i;
+        
+    end
+    err = err/m %mse on data with weights
+    
+    derr = abs(err-err_old)
+    err_old = err;
+    
+    err_rel = derr/err;
+    
+    iter = iter+1;
+    
+    %         t_err = toc;
+    
+    time_iter = toc;
+    
+    t = t+time_iter;
+    if err < err_opt
+        err_opt = err
+        DH_params_opt = DH_params;
+    end
+    
+    if (derr < dErr || err > 10*err_opt ||err_rel < Err_rel)
+        
+        break;
+        
     end
     
 end
 
+DH_params = DH_params_opt;
+
+%     % refine model
+%     [W,Inliers_Idx] = getWeights(resid);
+%
+% end
+
 end
+
+
+%%%%%%%UNUSED%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function [W,Inliers_Idx] = getWeights(R)
+% [med,thresh] = getThreshold(R);
+%
+% [n_dim,m] = size(R);
+%
+% v = (R-med)./thresh;
+% v = v.^2;
+%
+% [~,Outliers_Idx] = find(v > 1);
+% Inliers_Idx = 1:m;
+% Inliers_Idx(Outliers_Idx) = [];
+%
+% W = exp(-7*v); %%weights on all datapoints
+%
+% end
+%
+% function [m,thresh] = getThreshold(R)
+% m = median(R,2);
+% [n_dim,~] = size(R);
+%
+% abs_dev = abs(R-m);
+%
+% MAD = median(abs_dev,2);
+%
+% thresh = 2*ones(n_dim,1);
+% thresh = thresh.*MAD;
+%
+% for i = 1:n_dim
+%     if (thresh(i)) < 1e-10
+%         thresh(i) = 1e10;
+%     end
+%
+% end
+%
+% end

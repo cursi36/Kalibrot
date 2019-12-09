@@ -5,9 +5,10 @@ T_init = eye(4,4);
 n_joints = 3;
 types = 'rrr';
 
-T_tool = eye(4,4);
+% T_tool = eye(4,4);
+T_tool = [0 -1 0 1;1 0 0 1;0 0 1 0;0 0 0 1];
 tic
-Robot = RobotKinematics(n_joints, types, T_init,[]);
+Robot = RobotKinematics(n_joints, types, T_init,T_tool);
 
 toc
 % T = Robot.m_T_sym;
@@ -15,9 +16,9 @@ toc
 % Dor = Robot.m_Dor1_sym;
 % 
 q = zeros(3,1);
-% q(1) = 45*pi/180;
-% q(2) = 90*pi/180;
-% q(3) = -45*pi/180;
+q(1) = 45*pi/180;
+q(2) = 90*pi/180;
+q(3) = -45*pi/180;
 DH = [0 0 1 0; 0 0 0.5 0; 0 0 2 0]';
 % DH = rand(3,4)';
 DH_params = reshape(DH,4*n_joints,1);
