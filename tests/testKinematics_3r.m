@@ -5,8 +5,8 @@ T_init = eye(4,4);
 n_joints = 3;
 types = 'rrr';
 
-% T_tool = eye(4,4);
-T_tool = [0 -1 0 1;1 0 0 1;0 0 1 0;0 0 0 1];
+T_tool = eye(4,4);
+% T_tool = [0 -1 0 1;1 0 0 1;0 0 1 0;0 0 0 1];
 tic
 Robot = RobotKinematics(n_joints, types, T_init,T_tool);
 

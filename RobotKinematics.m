@@ -1,4 +1,10 @@
-
+%% Robot class for the kinematics and derivatives computation
+%% Robot = RobotKinematics(n_joints, types, T_init,T_tool)
+%% Inputs:
+%% n_joints = number of joints;
+%% types Joint types;
+%% T_init = base transformation
+%% T_tool = ende-effector to rool transfromation
 classdef RobotKinematics
     
     properties
@@ -27,14 +33,14 @@ classdef RobotKinematics
         function obj = RobotKinematics(n_joints, types, T_init,T_tool)
             
             if isempty(T_tool) == 0
-            obj.m_tool_added = 1;            
-            obj.m_T_tool = T_tool;
+                obj.m_tool_added = 1;
+                obj.m_T_tool = T_tool;
             end
             
             obj.m_n_joints = n_joints;
             obj.m_joint_types = types;
             obj.m_T_init = T_init;
-                        
+            
             obj.m_DH_params = sym('m_DH_params',[4*n_joints,1]);
             obj.m_q = sym('m_q',[n_joints,1]);
             
@@ -53,7 +59,7 @@ classdef RobotKinematics
             R = T_val(1:3,1:3);
             
             [quat,obj.m_orient_cond] = Rot2Quat(R);
-                        
+            
             P = [T_val(1:3,4);quat];
             
         end
@@ -61,21 +67,21 @@ classdef RobotKinematics
         %% substitue in symbolic function
         function [Dp,Dor] = getDerivs(obj,q,DH_params)
             
-             Dp = subs(obj.m_Dp_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
+            Dp = subs(obj.m_Dp_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
             
             if obj.m_orient_cond == 1
-
+                
                 Dor = subs(obj.m_Dor1_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
             elseif obj.m_orient_cond == 2
-
+                
                 Dor = subs(obj.m_Dor2_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
-            
+                
             elseif obj.m_orient_cond == 3
-
+                
                 Dor = subs(obj.m_Dor3_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
-            
+                
             elseif obj.m_orient_cond == 4
-
+                
                 Dor = subs(obj.m_Dor4_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
             end
             
@@ -106,7 +112,7 @@ classdef RobotKinematics
                 
             end
             
-            %             T = simplify(T);            
+            %             T = simplify(T);
             T = T*obj.m_T_tool;
             
             P = T(1:3,4);
@@ -117,7 +123,7 @@ classdef RobotKinematics
             quat_4= Rot2Quat_4(R);
             
             Dp = jacobian(P,obj.m_DH_params);
-
+            
             Dor1 = jacobian(quat_1,obj.m_DH_params);
             Dor2 = jacobian(quat_2,obj.m_DH_params);
             Dor3 = jacobian(quat_3,obj.m_DH_params);
@@ -151,7 +157,7 @@ classdef RobotKinematics
             
             R = T_val(1:3,1:3);
             
-            [quat,~] = Rot2Quat(R);           
+            [quat,~] = Rot2Quat(R);
             P = [T_val(1:3,4);quat];
             
         end
@@ -201,7 +207,7 @@ classdef RobotKinematics
                 for dim = 1:3
                     
                     DR_i(dim,:) = P_e_i'*dR_i(:,:,dim);
-
+                    
                 end
                 Di = R_i_1_0*(DP_i+DR_i);
                 
@@ -220,8 +226,8 @@ classdef RobotKinematics
             
             R_i = T(1:3,1:3);
             
-            [quat,~] = Rot2Quat(R_i); 
-                        
+            [quat,~] = Rot2Quat(R_i);
+            
             Dquat = zeros(4,n_var);
             
             for i = 1:obj.m_n_joints
@@ -246,22 +252,22 @@ classdef RobotKinematics
                 
                 R_i = Ti(1:3,1:3);
                 
-                [quat_i,cond] = Rot2Quat(R_i); 
+                [quat_i,cond] = Rot2Quat(R_i);
                 
-                if cond == 1 
-
+                if cond == 1
+                    
                     dq_dR_i = quatDeriv_Rot_1(R_i); %% in R^4x9
                     
                 elseif cond == 2
-
+                    
                     dq_dR_i = quatDeriv_Rot_2(R_i);
                     
                 elseif cond == 3
-
+                    
                     dq_dR_i = quatDeriv_Rot_3(R_i);
                     
                 elseif cond == 4
-
+                    
                     dq_dR_i = quatDeriv_Rot_4(R_i);
                     
                 end
@@ -311,11 +317,11 @@ classdef RobotKinematics
                 Dquat(1:3,:) = Dquat(1:3,:)-Dcp;
             end
             
-            if (obj.m_tool_added == 1) 
-            %%%%Tool added
-            R_tool = obj.m_T_tool(1:3,1:3);
-            quat_tool = Rot2Quat(R_tool);
-            
+            if (obj.m_tool_added == 1)
+                %%%%Tool added
+                R_tool = obj.m_T_tool(1:3,1:3);
+                quat_tool = Rot2Quat(R_tool);
+                
                 n = quat(4,1);
                 e = quat(1:3,1);
                 
@@ -329,7 +335,7 @@ classdef RobotKinematics
                 De = Dquat(1:3,:);
                 
                 Dquat(4,:) = Dn*n_i-e_i'*De;
-                Dquat(1:3,:) = n_i*De; 
+                Dquat(1:3,:) = n_i*De;
                 der = zeros(3,n_var);
                 for dim = 1:3
                     der(dim,:) = Dn*e_i(dim);
@@ -345,8 +351,8 @@ classdef RobotKinematics
                 
                 
             end
-                
-                
+            
+            
             
         end
         
@@ -360,8 +366,8 @@ classdef RobotKinematics
             T = obj.m_T_init;
             
             R_i = T(1:3,1:3);
-                        
-            [quat,~] = Rot2Quat(R_i); 
+            
+            [quat,~] = Rot2Quat(R_i);
             
             Dquat = zeros(4,n_var);
             
@@ -390,22 +396,22 @@ classdef RobotKinematics
                 %%%%%%Quat Derivatives
                 R_i = Ti(1:3,1:3);
                 
-                [quat_i,cond] = Rot2Quat(R_i); 
+                [quat_i,cond] = Rot2Quat(R_i);
                 
-                if cond == 1 
-
+                if cond == 1
+                    
                     dq_dR_i = quatDeriv_Rot_1(R_i); %% in R^4x9
                     
                 elseif cond == 2
-
+                    
                     dq_dR_i = quatDeriv_Rot_2(R_i);
                     
                 elseif cond == 3
-
+                    
                     dq_dR_i = quatDeriv_Rot_3(R_i);
                     
                 elseif cond == 4
-
+                    
                     dq_dR_i = quatDeriv_Rot_4(R_i);
                     
                 end
@@ -454,12 +460,12 @@ classdef RobotKinematics
                 
                 Dquat(1:3,:) = Dquat(1:3,:)-Dcp;
             end
-                       
-            if (obj.m_tool_added == 1) 
-            %%%%Tool added
-            R_tool = obj.m_T_tool(1:3,1:3);
-            quat_tool = Rot2Quat(R_tool);
             
+            if (obj.m_tool_added == 1)
+                %%%%Tool added
+                R_tool = obj.m_T_tool(1:3,1:3);
+                quat_tool = Rot2Quat(R_tool);
+                
                 n = quat(4,1);
                 e = quat(1:3,1);
                 
@@ -473,7 +479,7 @@ classdef RobotKinematics
                 De = Dquat(1:3,:);
                 
                 Dquat(4,:) = Dn*n_i-e_i'*De;
-                Dquat(1:3,:) = n_i*De; 
+                Dquat(1:3,:) = n_i*De;
                 der = zeros(3,n_var);
                 for dim = 1:3
                     der(dim,:) = Dn*e_i(dim);
@@ -502,18 +508,18 @@ classdef RobotKinematics
         
         
         
-%         %% get derivatives with Dp computed numerically without symbolic
-%         function [Dp,Dor] = getDerivsNum(obj,q,DH_params)
-%             
-%             Dp =  getPDerivNum(obj,q,DH_params);
-%             
-%             if obj.m_orient_cond == 1
-%                 Dor = subs(obj.m_Dor1_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
-%             else
-%                 Dor = subs(obj.m_Dor2_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
-%             end
-%             Dor = double(Dor);
-%         end
+        %         %% get derivatives with Dp computed numerically without symbolic
+        %         function [Dp,Dor] = getDerivsNum(obj,q,DH_params)
+        %
+        %             Dp =  getPDerivNum(obj,q,DH_params);
+        %
+        %             if obj.m_orient_cond == 1
+        %                 Dor = subs(obj.m_Dor1_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
+        %             else
+        %                 Dor = subs(obj.m_Dor2_sym,[obj.m_DH_params;obj.m_q],[DH_params;q]);
+        %             end
+        %             Dor = double(Dor);
+        %         end
         
         
         
@@ -591,7 +597,7 @@ function quat = Rot2Quat_3(R)
 
 t = R(2,2)-R(1,1)-R(3,3);
 
-quat(2,1) = 0.5*sqrt(1+t); %%qw
+quat(2,1) = 0.5*sqrt(1+t); %%qy
 s = 1/(4*quat(2));
 
 quat(1,1) = s*(R(1,2)+R(2,1)); %%qx
@@ -606,11 +612,11 @@ function quat = Rot2Quat_4(R)
 
 t = R(3,3)-R(2,2)-R(1,1);
 
-quat(3,1) = 0.5*sqrt(1+t); %%qw
+quat(3,1) = 0.5*sqrt(1+t); %%qz
 s = 1/(4*quat(3));
 
 quat(1,1) = s*(R(1,3)+R(3,1)); %%qx
-quat(2,1) = s*(R(2,3)+R(3,2)); %%qz
+quat(2,1) = s*(R(2,3)+R(3,2)); %%qy
 quat(4,1) = s*(R(2,1)-R(1,2)); %%qw
 
 end
@@ -625,7 +631,7 @@ if (t > 1e-12)
     condition = 2;
     
 else
-   
+    
     if (R(1,1) > R(2,2) && R(1,1) > R(3,3))
         
         quat = Rot2Quat_1(R);
@@ -636,7 +642,7 @@ else
         quat = Rot2Quat_3(R);
         condition = 3;
         
-    else 
+    else
         quat = Rot2Quat_4(R);
         condition = 4;
     end

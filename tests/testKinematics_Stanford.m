@@ -12,9 +12,6 @@ Robot = RobotKinematics(n_joints, types, T_init,[]);
 toc
 
 q = zeros(n_joints,1);
-% q(1) = 45*pi/180;
-% q(2) = 90*pi/180;
-% q(3) = -45*pi/180;
 DH = ...
     [1 -pi/2 0 -pi/2;
     1.5 pi 0 -pi/2;
