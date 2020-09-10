@@ -356,6 +356,16 @@ classdef RobotKinematics
             
         end
         
+        %get quaternion form rotation matrix
+        function quat = getQuat(obj,R)
+            [quat,~] = Rot2Quat(R);
+        end
+        
+        %get rotation matrix form quaternion
+        function R = getRotmat(obj,quat)
+            R = Quat2Rot(quat);
+        end
+        
         %%GetPoseDerivNum: no symbolic used
         %%Get Pose, DP, Dquat derivs together
         
