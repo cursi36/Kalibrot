@@ -23,9 +23,9 @@
         %% PermMat = identification matrix K at each iteration;
         %% observability = 3 observability measures for each iteration.
 
-    n_pars = length(x(comp_base,:)); %paramters estimated
-    [obs,~] = AnalyzeData(dP,D(:,comp_base),x(comp_base,:),n_pars,m);
-    Info.Observability(:,iter) = obs;
+%     n_pars = length(x(comp_base,:)); %paramters estimated
+%     [obs,~] = AnalyzeData(dP,D(:,comp_base),x(comp_base,:),n_pars,m);
+%     Info.Observability(:,iter) = obs;
 
 function [DH_params,P,W,Info] = getModel(Robot,dim,P_m,Q,x0,W,w_p,DH_param_lims,options)
 
