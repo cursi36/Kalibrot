@@ -87,6 +87,7 @@ P_m = P_m(dim,:);
 %% Solver selection
 options.solver = "pinv"; 
 options.damping = 1e-03; %initial damping factor for Levenberg-Marquardt algorithm
+options.MaxIter = 1000; %Maximum number of iterations
 options.Visualize{1} = true; %enable plotting of the results
 options.Visualize{2} =[0,0,1,0,0,0]'; %joint values for visualization
 [DH_params_pinv,P_pinv,W_pinv,Info_pinv] = Calibrate(Robot,dim,P_m,Q,DH,W,w_p,Limits,options);
@@ -94,6 +95,7 @@ options.Visualize{2} =[0,0,1,0,0,0]'; %joint values for visualization
 
 options.solver = "qp";
 options.damping = 1e-03;
+options.MaxIter = 1000; %Maximum number of iterations
 options.Visualize{1} = true;
 options.Visualize{2} =[0,0,1,0,0,0]';
 [DH_params_qp,P_qp,W_qp,Info_qp] = Calibrate(Robot,dim,P_m,Q,DH,W,w_p,Limits,options);
