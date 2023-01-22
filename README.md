@@ -1,3 +1,18 @@
+# This work has been presented at IROS 2021
+Link:
+https://ieeexplore.ieee.org/abstract/document/9635859
+
+Citation:
+@INPROCEEDINGS{9635859,
+author={Cursi, Francesco and Bai, Weibang and Kormushev, Petar},
+booktitle={2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+title={Kalibrot: A Simple-To-Use Matlab Package for Robot Kinematic Calibration}, 
+year={2021},
+volume={},
+number={},
+pages={8852-8859},
+doi={10.1109/IROS51168.2021.9635859}}
+
 # Kalibrot
 Algorithm for Robot Kinematic Calibration
 
